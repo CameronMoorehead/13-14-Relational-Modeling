@@ -15,7 +15,7 @@ const studentMockCreate = () => {
   return new Student({
     name: faker.lorem.words(10),
     age: faker.random.number(2),
-    description: faker.lorem.words(100),
+    description: faker.lorem.words(10),
   }).save();
 };
 
@@ -117,23 +117,20 @@ describe('/api/students', () => {
 
     test('should respond with a 409 status code if there is a unique key clash', () => {
       let duplicateStudent = null;
-      const studentToPost = {
-        name: 'test',
-        age: 10,
-        description: 'test description',
-      };
+      let studentToPost = null;
+      
       return studentMockCreate()
         .then(student => {
-          duplicateStudent = student;
-          return superagent.post(`${apiURL}`)
-            .send(studentToPost);
-        })
-        .then(() => {
-          return superagent.put(`${apiURL}/${studentToPost._id}`)
-            .send({ _id: duplicateStudent._id.toString() })
-            .then(Promise.reject)
-            .catch(response => {
-              expect(response.status).toEqual(404);
+          studentToPost = student;
+          return studentMockCreate()
+            .then(student => {
+              duplicateStudent = student;
+              return superagent.put(`${apiURL}/${studentToPost._id}`)
+                .send({ name: duplicateStudent.name })
+                .then(Promise.reject)
+                .catch(response => {
+                  expect(response.status).toEqual(409);
+                });
             });
         });
     });
