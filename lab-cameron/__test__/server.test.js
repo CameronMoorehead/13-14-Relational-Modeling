@@ -26,15 +26,27 @@ describe('/api/students', () => {
 
   describe('POST /api/students', () => {
     test('should respond with a student and 200 status code if there is no error',  () => {
+      // faker data taking too long to generate
+      // const studentToPost = {
+      //   name: faker.lorem.words(100),
+      //   age: faker.random.number(100),
+      //   description: faker.lorem.words(100),
+      // };
       const studentToPost = {
-        name: faker.lorem.words(10),
-        age: faker.random.number(2),
-        description: faker.lorem.words(100),
+        name: 'test',
+        age: 10,
+        description: 'test description',
       };
       return superagent.post(`${apiURL}`)
         .send(studentToPost)
         .then(response => {
           expect(response.status).toEqual(200);
+          expect(response.body._id).toBeTruthy();
+          expect(response.body.timestamp).toBeTruthy();
+
+          expect(response.body.name).toEqual(studentToPost.name);
+          expect(response.body.age).toEqual(studentToPost.age);
+          expect(response.body.description).toEqual(studentToPost.description);
         });
     });
 
@@ -50,17 +62,75 @@ describe('/api/students', () => {
         });
     });
 
-    test.only('should respond with a student and 409 status code if there is a unique key clash',  () => {
+    test('should respond with a 409 status code if there is a unique key clash',  () => {
+      // faker data taking too long to generate
+      // const studentToPost = {
+      //   name: faker.lorem.words(10),
+      //   age: faker.random.number(2),
+      //   description: faker.lorem.words(100),
+      // };
+
       const studentToPost = {
-        name: faker.lorem.words(10),
-        age: faker.random.number(2),
-        description: faker.lorem.words(100),
+        name: 'test',
+        age: 10,
+        description: 'test description',
       };
       return superagent.post(`${apiURL}`)
         .send(studentToPost)
         .then(() => {
           return superagent.post(`${apiURL}`)
             .send(studentToPost)
+            .then(Promise.reject)
+            .catch(response => {
+              expect(response.status).toEqual(409);
+            });
+        });
+    });
+  });
+
+  describe('PUT /api/students/:id', () => {
+    test('should respond with a 200 status code and an updated student if student exists', () => {
+      let studentToUpdate = null;
+
+      return studentMockCreate()
+        .then(student => {
+          studentToUpdate = student;
+          return superagent.put(`${apiURL}/${student._id}`)
+            .send({ name: 'testing' });
+        })
+        .then(response => {
+          expect(response.status).toEqual(200);
+          expect(response.body.name).toEqual('testing');
+          expect(response.body.age).toEqual(studentToUpdate.age);
+          expect(response.body.description).toEqual(studentToUpdate.description);
+          expect(response.body._id).toEqual(studentToUpdate._id.toString());
+        });
+    });
+
+    test('should respond with a 404 status code if id is not found', () => {
+      return superagent.put(`${apiURL}/invalidId`)
+        .then(Promise.reject)
+        .catch(response => {
+          expect(response.status).toEqual(404);
+        });
+    });
+
+    test('should respond with a 409 status code if there is a unique key clash', () => {
+      let duplicateStudent = null;
+      const studentToPost = {
+        name: 'test',
+        age: 10,
+        description: 'test description',
+      };
+      return studentMockCreate()
+        .then(student => {
+          duplicateStudent = student;
+          return superagent.post(`${apiURL}`)
+            .send(studentToPost);
+        })
+        .then(() => {
+          return superagent.put(`${apiURL}/${studentToPost._id}`)
+            .send({ _id: duplicateStudent._id.toString() })
             .then(Promise.reject)
             .catch(response => {
               expect(response.status).toEqual(409);
