@@ -18,7 +18,7 @@ A simple HTTP Server using Express with MongoDB for persistence
 
 # Features
 
-GET, POST, and DELETE requests on path `/api/students/<user-id>`
+GET, POST, PUT and DELETE requests on path `/api/students/<student-id>`
 
 All student accounts have a mongoose Schema which include a `name`, an `age`,
 and an optional `description` property.
@@ -28,12 +28,30 @@ and an optional `description` property.
 ### POST
 `POST /api/students` will add a single student in MongoDB
 
+Success will respond with 200 status code
+Unique key clashes will respond with a 409 status code
+Bad requests will respond with a 400 status code
+
 ### GET
 `GET /api/students` will return all students in MongoDB as an array
-`GET /api/students/<user-id>` will return a single student with the specified id
+`GET /api/students/<student-id>` will return a single student with the specified id
+
+Success will respond with a 200 status code
+Bad requests will respond with a 400 status code
+
+### PUT
+`PUT /api/students/<student-id>` will allow for passed user properties in `send` to be edited
+
+Success will respond with a 200 status code
+Unique key clashes will respond with a 409 status code
+If the id is invalid a 400 status code will be returned
+
 
 ### DELETE
-`DELETE /api/students/<user-id>` will delete a single student from MongoDB with the specified id
+`DELETE /api/students/<student-id>` will delete a single student from MongoDB with the specified id
+
+Success will respond with a 204 status code
+If the id does not exit a 404 status code will be returned
 
 # Installation
 
