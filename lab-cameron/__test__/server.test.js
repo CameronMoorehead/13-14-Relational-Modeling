@@ -25,7 +25,7 @@ describe('/api/students', () => {
   afterEach(() => Student.remove({}));
 
   describe('POST /api/students', () => {
-    test('should respond with a note and 200 status code if there is no error',  () => {
+    test('should respond with a student and 200 status code if there is no error',  () => {
       const studentToPost = {
         name: faker.lorem.words(10),
         age: faker.random.number(2),
@@ -47,6 +47,24 @@ describe('/api/students', () => {
         .then(Promise.reject)
         .catch(response => {
           expect(response.status).toEqual(400);
+        });
+    });
+
+    test.only('should respond with a student and 409 status code if there is a unique key clash',  () => {
+      const studentToPost = {
+        name: faker.lorem.words(10),
+        age: faker.random.number(2),
+        description: faker.lorem.words(100),
+      };
+      return superagent.post(`${apiURL}`)
+        .send(studentToPost)
+        .then(() => {
+          return superagent.post(`${apiURL}`)
+            .send(studentToPost)
+            .then(Promise.reject)
+            .catch(response => {
+              expect(response.status).toEqual(409);
+            });
         });
     });
   });
