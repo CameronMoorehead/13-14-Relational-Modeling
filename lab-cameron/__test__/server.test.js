@@ -133,7 +133,7 @@ describe('/api/students', () => {
             .send({ _id: duplicateStudent._id.toString() })
             .then(Promise.reject)
             .catch(response => {
-              expect(response.status).toEqual(409);
+              expect(response.status).toEqual(404);
             });
         });
     });
