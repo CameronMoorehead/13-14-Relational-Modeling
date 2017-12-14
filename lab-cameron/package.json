@@ -9,8 +9,8 @@
   "scripts": {
     "test": "jest -i --coverage",
     "lint": "eslint *.js */**.js",
-    "start": "npm run index.js",
-    "dbon": "mkdir -p ./db mongod --dbpath ./db",
+    "start": "node index.js",
+    "dbon": "mkdir -p ./db && mongod --dbpath ./db",
     "dboff": "killall mongod"
   },
   "repository": {
