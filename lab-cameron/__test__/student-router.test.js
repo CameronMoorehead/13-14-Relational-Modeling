@@ -58,6 +58,7 @@ describe('/api/students', () => {
     });
 
     test('should respond with a 404 code if school id is not present', () => {
+      // hard coded values into send; faker taking too long
       return superagent.post(`${apiURL}`)
         .send({
           name: 'testing',
@@ -126,13 +127,13 @@ describe('/api/students', () => {
       let studentToPost = null;
 
       return studentMock.create()
-        .then(student => {
-          studentToPost = student;
+        .then(mock => {
+          studentToPost = mock.student;
           return studentMock.create()
-            .then(student => {
-              duplicateStudent = student;
-              return superagent.put(`${apiURL}/${studentToPost.student._id}`)
-                .send({ name: duplicateStudent.student.name })
+            .then(mock => {
+              duplicateStudent = mock.student;
+              return superagent.put(`${apiURL}/${studentToPost._id}`)
+                .send({ name: duplicateStudent.name })
                 .then(Promise.reject)
                 .catch(response => {
                   expect(response.status).toEqual(409);
