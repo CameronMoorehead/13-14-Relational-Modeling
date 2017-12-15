@@ -80,11 +80,25 @@ describe('/api/schools', () => {
 
   describe('DELETE /api/schools/:id', () => {
     // need a 204 on success
-    // need a 404 on invalidId
-    return superagent.delete(`${apiURL}/invalidId`)
-      .then(Promise.reject)
-      .catch(response => {
-        expect(response.status).toEqual(404);
-      });
+    test('should respond with a 204 status and removed school if there are no errors', () => {
+      let tempSchoolMock = null;
+
+      return schoolMock.create()
+        .then(school => {
+          tempSchoolMock = school;
+          return superagent.delete(`${apiURL}/${school._id}`);
+        })
+        .then(response => {
+          expect(response.status).toEqual(204);
+        });
+    });
+
+    test('should respond with a 404 status and a category if school id is not found', () => {
+      return superagent.delete(`${apiURL}/invalidId`)
+        .then(Promise.reject)
+        .catch(response => {
+          expect(response.status).toEqual(404);
+        });
+    });
   });
 });
