@@ -19,7 +19,7 @@ schoolRouter.post('/api/schools', jsonParser, (request, response, next) => {
 schoolRouter.put('/api/schools/:id', jsonParser, (request, response, next) => {
   let options = {new : true, runValidators : true};
 
-  return School.findByIdAndUpdate(request.params.id, request.body, options)
+  School.findByIdAndUpdate(request.params.id, request.body, options)
     .then(school => {
       if(!school)
         throw httpErrors(404,'school not found');
@@ -29,7 +29,7 @@ schoolRouter.put('/api/schools/:id', jsonParser, (request, response, next) => {
 });
 
 schoolRouter.get('/api/schools/:id', (request, response, next) => {
-  return School.findById(request.params.id)
+  School.findById(request.params.id)
     .then(school => {
       if(!school)
         throw httpErrors(404,'school not found');
@@ -40,7 +40,7 @@ schoolRouter.get('/api/schools/:id', (request, response, next) => {
 
 
 schoolRouter.delete('/api/schools/:id',(request,response,next) => {
-  return School.findByIdAndRemove(request.params.id)
+  School.findByIdAndRemove(request.params.id)
     .then(school => {
       if(!school)
         throw httpErrors(404,'school not found');
