@@ -18,7 +18,7 @@ describe('/api/students', () => {
   afterEach(() => studentMock.remove({}));
 
   describe('POST /api/students', () => {
-    test.only('should respond with a student and 200 status code if there is no error',  () => {
+    test('should respond with a student and 200 status code if there is no error',  () => {
       let tempSchoolMock = null;
       return schoolMock.create()
         .then(mock => {
@@ -57,14 +57,21 @@ describe('/api/students', () => {
         });
     });
 
-    test('should respond with a 409 status code if there is a unique key clash',  () => {
-      // faker data taking too long to generate
-      // const studentToPost = {
-      //   name: faker.lorem.words(10),
-      //   age: faker.random.number(2),
-      //   description: faker.lorem.words(100),
-      // };
+    test('should respond with a 404 code if school id is not present', () => {
+      return superagent.post(`${apiURL}`)
+        .send({
+          name: faker.lorem.words(2),
+          age: faker.random.number(2),
+          description: faker.lorem.words(10),
+          school: 'invalidId',
+        })
+        .then(Promise.reject)
+        .catch(response => {
+          expect(response.status).toEqual(404);
+        });
+    });
 
+    test('should respond with a 409 status code if there is a unique key clash',  () => {
       const studentToPost = {
         name: 'test',
         age: 10,
