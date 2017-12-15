@@ -81,5 +81,10 @@ describe('/api/schools', () => {
   describe('DELETE /api/schools/:id', () => {
     // need a 204 on success
     // need a 404 on invalidId
+    return superagent.delete(`${apiURL}/invalidId`)
+      .then(Promise.reject)
+      .catch(response => {
+        expect(response.status).toEqual(404);
+      });
   });
 });
