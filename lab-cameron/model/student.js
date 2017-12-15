@@ -18,7 +18,7 @@ const studentSchema = mongoose.Schema({
   description: {
     type: String,
     required: false,
-    minlength: 10,
+    minlength: 2,
   },
   timestamp: {
     type: Date,
