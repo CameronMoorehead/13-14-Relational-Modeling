@@ -71,7 +71,7 @@ describe('/api/students', () => {
         });
     });
 
-    test.only('should respond with a 409 status code if there is a unique key clash',  () => {
+    test('should respond with a 409 status code if there is a unique key clash',  () => {
       return schoolMock.create()
         .then(mock => {
           const studentToPost = {
@@ -95,13 +95,13 @@ describe('/api/students', () => {
   });
 
   describe('PUT /api/students/:id', () => {
-    test('should respond with a 200 status code and an updated student if student exists', () => {
+    test.only('should respond with a 200 status code and an updated student if student exists', () => {
       let studentToUpdate = null;
 
-      return studentMockCreate()
-        .then(student => {
-          studentToUpdate = student;
-          return superagent.put(`${apiURL}/${student._id}`)
+      return studentMock.create()
+        .then(mock => {
+          studentToUpdate = mock.student;
+          return superagent.put(`${apiURL}/${mock.student._id}`)
             .send({ name: 'testing' });
         })
         .then(response => {
