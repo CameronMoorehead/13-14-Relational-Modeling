@@ -1,52 +1,47 @@
 'use strict';
 
-process.env.PORT = 8080;
-
-process.env.MONGODB_URI = 'mongodb://localhost/testing';
+require('./lib/setup');
 
 const faker = require('faker');
 const superagent = require('superagent');
-const Student = require('../model/student');
+// const Student = require('../model/student');
 const server = require('../lib/server');
 
-const apiURL = `http://localhost:${process.env.PORT}/api/students`;
+const studentMock = require('./lib/student-mock');
+const schoolMock = require('./lib/school-mock');
 
-const studentMockCreate = () => {
-  return new Student({
-    name: faker.lorem.words(10),
-    age: faker.random.number(2),
-    description: faker.lorem.words(10),
-  }).save();
-};
+const apiURL = `http://localhost:${process.env.PORT}/api/students`;
 
 describe('/api/students', () => {
   beforeAll(server.start);
   afterAll(server.stop);
-  afterEach(() => Student.remove({}));
+  afterEach(() => studentMock.remove({}));
 
   describe('POST /api/students', () => {
     test('should respond with a student and 200 status code if there is no error',  () => {
-      // faker data taking too long to generate
-      // const studentToPost = {
-      //   name: faker.lorem.words(100),
-      //   age: faker.random.number(100),
-      //   description: faker.lorem.words(100),
-      // };
-      const studentToPost = {
-        name: 'test',
-        age: 10,
-        description: 'test description',
-      };
-      return superagent.post(`${apiURL}`)
-        .send(studentToPost)
-        .then(response => {
-          expect(response.status).toEqual(200);
-          expect(response.body._id).toBeTruthy();
-          expect(response.body.timestamp).toBeTruthy();
+      let tempSchoolMock = null;
+      return schoolMock.create()
+        .then(mock => {
+          tempSchoolMock = mock;
 
-          expect(response.body.name).toEqual(studentToPost.name);
-          expect(response.body.age).toEqual(studentToPost.age);
-          expect(response.body.description).toEqual(studentToPost.description);
+          const studentToPost = {
+            name: 'test',
+            age: 10,
+            description: 'test description',
+            school: mock._id,
+          };
+          return superagent.post(`${apiURL}`)
+            .send(studentToPost)
+            .then(response => {
+              expect(response.status).toEqual(200);
+              expect(response.body._id).toBeTruthy();
+              expect(response.body.timestamp).toBeTruthy();
+              expect(response.body.school).toEqual(tempSchoolMock._id.toString());
+
+              expect(response.body.name).toEqual(studentToPost.name);
+              expect(response.body.age).toEqual(studentToPost.age);
+              expect(response.body.description).toEqual(studentToPost.description);
+            });
         });
     });
 
@@ -62,27 +57,39 @@ describe('/api/students', () => {
         });
     });
 
-    test('should respond with a 409 status code if there is a unique key clash',  () => {
-      // faker data taking too long to generate
-      // const studentToPost = {
-      //   name: faker.lorem.words(10),
-      //   age: faker.random.number(2),
-      //   description: faker.lorem.words(100),
-      // };
-
-      const studentToPost = {
-        name: 'test',
-        age: 10,
-        description: 'test description',
-      };
+    test('should respond with a 404 code if school id is not present', () => {
+      // hard coded values into send; faker taking too long
       return superagent.post(`${apiURL}`)
-        .send(studentToPost)
-        .then(() => {
+        .send({
+          name: 'testing',
+          age: 10,
+          description: 'testing description',
+          school: 'invalidId',
+        })
+        .then(Promise.reject)
+        .catch(response => {
+          expect(response.status).toEqual(404);
+        });
+    });
+
+    test('should respond with a 409 status code if there is a unique key clash',  () => {
+      return schoolMock.create()
+        .then(mock => {
+          const studentToPost = {
+            name: 'test',
+            age: 10,
+            description: 'test description',
+            school: mock._id,
+          };
           return superagent.post(`${apiURL}`)
             .send(studentToPost)
-            .then(Promise.reject)
-            .catch(response => {
-              expect(response.status).toEqual(409);
+            .then(() => {
+              return superagent.post(`${apiURL}`)
+                .send(studentToPost)
+                .then(Promise.reject)
+                .catch(response => {
+                  expect(response.status).toEqual(409);
+                });
             });
         });
     });
@@ -92,10 +99,10 @@ describe('/api/students', () => {
     test('should respond with a 200 status code and an updated student if student exists', () => {
       let studentToUpdate = null;
 
-      return studentMockCreate()
-        .then(student => {
-          studentToUpdate = student;
-          return superagent.put(`${apiURL}/${student._id}`)
+      return studentMock.create()
+        .then(mock => {
+          studentToUpdate = mock.student;
+          return superagent.put(`${apiURL}/${mock.student._id}`)
             .send({ name: 'testing' });
         })
         .then(response => {
@@ -118,13 +125,13 @@ describe('/api/students', () => {
     test('should respond with a 409 status code if there is a unique key clash', () => {
       let duplicateStudent = null;
       let studentToPost = null;
-      
-      return studentMockCreate()
-        .then(student => {
-          studentToPost = student;
-          return studentMockCreate()
-            .then(student => {
-              duplicateStudent = student;
+
+      return studentMock.create()
+        .then(mock => {
+          studentToPost = mock.student;
+          return studentMock.create()
+            .then(mock => {
+              duplicateStudent = mock.student;
               return superagent.put(`${apiURL}/${studentToPost._id}`)
                 .send({ name: duplicateStudent.name })
                 .then(Promise.reject)
@@ -140,10 +147,10 @@ describe('/api/students', () => {
     test('should respond with a 200 status code and a single student if student exists', () => {
       let studentToTest = null;
 
-      return studentMockCreate()
-        .then(student => {
-          studentToTest = student;
-          return superagent.get(`${apiURL}/${student._id}`);
+      return studentMock.create()
+        .then(mock => {
+          studentToTest = mock.student;
+          return superagent.get(`${apiURL}/${mock.student._id}`);
         })
         .then(response => {
           expect(response.status).toEqual(200);
@@ -157,17 +164,17 @@ describe('/api/students', () => {
     test('should respond with a 200 status code and all students if no id is provided', () => {
       const studentArrayToTest = [];
 
-      return studentMockCreate()
-        .then(student=> {
-          studentArrayToTest.push(student);
-          return studentMockCreate();
+      return studentMock.create()
+        .then(mock=> {
+          studentArrayToTest.push(mock.student);
+          return studentMock.create();
         })
-        .then(student => {
-          studentArrayToTest.push(student);
-          return studentMockCreate();
+        .then(mock => {
+          studentArrayToTest.push(mock.student);
+          return studentMock.create();
         })
-        .then(student => {
-          studentArrayToTest.push(student);
+        .then(mock => {
+          studentArrayToTest.push(mock.student);
           return superagent.get(`${apiURL}`)
             .then(response => {
               expect(response.status).toEqual(200);
@@ -209,9 +216,9 @@ describe('/api/students', () => {
 
   describe('DELETE /api/students/:id', () => {
     test('should delete a single student if valid id is provided', () => {
-      return studentMockCreate()
-        .then(student => {
-          return superagent.delete(`${apiURL}/${student._id}`);
+      return studentMock.create()
+        .then(mock => {
+          return superagent.delete(`${apiURL}/${mock.student._id}`);
         })
         .then(response => {
           expect(response.status).toEqual(204);

@@ -14,6 +14,11 @@ module.exports = (error, request, response, next) => {
 
   // Mongo Errors
   const message = error.message.toLowerCase();
+  
+  if (message.includes('objectid failed')) {
+    logger.log('info', 'Responding with a 404 status code');
+    return response.sendStatus(404);
+  }
 
   if (message.includes('validation failed')) {
     logger.log('info', 'Responding with a 400 status code');
@@ -23,11 +28,6 @@ module.exports = (error, request, response, next) => {
   if (message.includes('duplicate key')) {
     logger.log('info', 'Responding with a 409 status code');
     return response.sendStatus(409);
-  }
-
-  if (message.includes('objectid failed')) {
-    logger.log('info', 'Responding with a 404 status code');
-    return response.sendStatus(404);
   }
 
   if (message.includes('unauthorized')) {

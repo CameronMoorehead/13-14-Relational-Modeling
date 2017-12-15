@@ -22,6 +22,7 @@ studentRouter.post('/api/students', jsonParser, (request, response, next) => {
 
 studentRouter.get('/api/students/:id', (request, response, next) => {
   Student.findById(request.params.id)
+    .populate('school')
     .then(student => {
       if (!student) {
         throw httpErrors(404, 'student not found');

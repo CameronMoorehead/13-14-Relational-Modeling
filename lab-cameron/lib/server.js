@@ -13,10 +13,12 @@ mongoose.Promise = Promise;
 
 // Middleware Requiring
 const loggerMiddleware = require('./logger-middleware');
+const schoolRouter = require('../route/school-router');
 const studentRouter = require('../route/student-router');
 const errorMiddleware = require('./error-middleware');
 
 app.use(loggerMiddleware);
+app.use(schoolRouter);
 app.use(studentRouter);
 
 app.all('*', (request, response) => {
