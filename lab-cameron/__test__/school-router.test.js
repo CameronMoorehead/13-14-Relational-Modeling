@@ -79,13 +79,9 @@ describe('/api/schools', () => {
   });
 
   describe('DELETE /api/schools/:id', () => {
-    // need a 204 on success
     test('should respond with a 204 status and removed school if there are no errors', () => {
-      let tempSchoolMock = null;
-
       return schoolMock.create()
         .then(school => {
-          tempSchoolMock = school;
           return superagent.delete(`${apiURL}/${school._id}`);
         })
         .then(response => {
