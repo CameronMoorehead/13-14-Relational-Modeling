@@ -71,20 +71,24 @@ describe('/api/students', () => {
         });
     });
 
-    test('should respond with a 409 status code if there is a unique key clash',  () => {
-      const studentToPost = {
-        name: 'test',
-        age: 10,
-        description: 'test description',
-      };
-      return superagent.post(`${apiURL}`)
-        .send(studentToPost)
-        .then(() => {
+    test.only('should respond with a 409 status code if there is a unique key clash',  () => {
+      return schoolMock.create()
+        .then(mock => {
+          const studentToPost = {
+            name: 'test',
+            age: 10,
+            description: 'test description',
+            school: mock._id,
+          };
           return superagent.post(`${apiURL}`)
             .send(studentToPost)
-            .then(Promise.reject)
-            .catch(response => {
-              expect(response.status).toEqual(409);
+            .then(() => {
+              return superagent.post(`${apiURL}`)
+                .send(studentToPost)
+                .then(Promise.reject)
+                .catch(response => {
+                  expect(response.status).toEqual(409);
+                });
             });
         });
     });
