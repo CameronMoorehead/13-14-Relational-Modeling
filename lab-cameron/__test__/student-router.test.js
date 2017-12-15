@@ -1,52 +1,46 @@
 'use strict';
 
-process.env.PORT = 8080;
-
-process.env.MONGODB_URI = 'mongodb://localhost/testing';
+require('./lib/setup');
 
 const faker = require('faker');
 const superagent = require('superagent');
-const Student = require('../model/student');
+// const Student = require('../model/student');
 const server = require('../lib/server');
 
-const apiURL = `http://localhost:${process.env.PORT}/api/students`;
+const studentMock = require('./lib/student-mock');
+const schoolMock = require('./lib/school-mock');
 
-const studentMockCreate = () => {
-  return new Student({
-    name: faker.lorem.words(10),
-    age: faker.random.number(2),
-    description: faker.lorem.words(10),
-  }).save();
-};
+const apiURL = `http://localhost:${process.env.PORT}/api/students`;
 
 describe('/api/students', () => {
   beforeAll(server.start);
   afterAll(server.stop);
-  afterEach(() => Student.remove({}));
+  afterEach(() => studentMock.remove({}));
 
   describe('POST /api/students', () => {
-    test('should respond with a student and 200 status code if there is no error',  () => {
-      // faker data taking too long to generate
-      // const studentToPost = {
-      //   name: faker.lorem.words(100),
-      //   age: faker.random.number(100),
-      //   description: faker.lorem.words(100),
-      // };
-      const studentToPost = {
-        name: 'test',
-        age: 10,
-        description: 'test description',
-      };
-      return superagent.post(`${apiURL}`)
-        .send(studentToPost)
-        .then(response => {
-          expect(response.status).toEqual(200);
-          expect(response.body._id).toBeTruthy();
-          expect(response.body.timestamp).toBeTruthy();
+    test.only('should respond with a student and 200 status code if there is no error',  () => {
+      let tempSchoolMock = null;
+      return schoolMock.create()
+        .then(mock => {
+          tempSchoolMock = mock;
 
-          expect(response.body.name).toEqual(studentToPost.name);
-          expect(response.body.age).toEqual(studentToPost.age);
-          expect(response.body.description).toEqual(studentToPost.description);
+          const studentToPost = {
+            name: 'test',
+            age: 10,
+            description: 'test description',
+            school: mock._id,
+          };
+          return superagent.post(`${apiURL}`)
+            .send(studentToPost)
+            .then(response => {
+              expect(response.status).toEqual(200);
+              // expect(response.body._id).toBeTruthy();
+              // expect(response.body.timestamp).toBeTruthy();
+              //
+              // expect(response.body.name).toEqual(studentToPost.name);
+              // expect(response.body.age).toEqual(studentToPost.age);
+              // expect(response.body.description).toEqual(studentToPost.description);
+            });
         });
     });
 
@@ -118,7 +112,7 @@ describe('/api/students', () => {
     test('should respond with a 409 status code if there is a unique key clash', () => {
       let duplicateStudent = null;
       let studentToPost = null;
-      
+
       return studentMockCreate()
         .then(student => {
           studentToPost = student;
