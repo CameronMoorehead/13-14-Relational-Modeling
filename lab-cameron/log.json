@@ -10,3 +10,6 @@
 {"level":"info","message":"Server is listening on port 7000","timestamp":"2017-12-15T00:21:13.785Z"}
 {"level":"info","message":"Processing: POST on: /api/students","timestamp":"2017-12-15T00:21:13.836Z"}
 {"level":"info","message":"Server off","timestamp":"2017-12-15T00:21:13.874Z"}
+{"level":"info","message":"Server is listening on port 7000","timestamp":"2017-12-15T00:26:22.619Z"}
+{"level":"info","message":"Processing: POST on: /api/students","timestamp":"2017-12-15T00:26:22.676Z"}
+{"level":"info","message":"Server off","timestamp":"2017-12-15T00:26:22.716Z"}

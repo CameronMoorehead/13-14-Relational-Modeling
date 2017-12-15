@@ -34,12 +34,13 @@ describe('/api/students', () => {
             .send(studentToPost)
             .then(response => {
               expect(response.status).toEqual(200);
-              // expect(response.body._id).toBeTruthy();
-              // expect(response.body.timestamp).toBeTruthy();
-              //
-              // expect(response.body.name).toEqual(studentToPost.name);
-              // expect(response.body.age).toEqual(studentToPost.age);
-              // expect(response.body.description).toEqual(studentToPost.description);
+              expect(response.body._id).toBeTruthy();
+              expect(response.body.timestamp).toBeTruthy();
+              expect(response.body.school).toEqual(tempSchoolMock._id.toString());
+
+              expect(response.body.name).toEqual(studentToPost.name);
+              expect(response.body.age).toEqual(studentToPost.age);
+              expect(response.body.description).toEqual(studentToPost.description);
             });
         });
     });
