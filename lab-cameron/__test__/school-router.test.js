@@ -23,8 +23,18 @@ describe('/api/schools', () => {
         .then(response => {
           expect(response.status).toEqual(200);
           expect(response.body.keywords).toEqual(['test1', 'test2']);
+        });
+    });
+
+    test('should return a 400 and a school if request is bad', () => {
+      return superagent.post(apiURL)
+        .send({
+          keywords: ['test1', 'test2'],
         })
-        .catch(error => console.log(error));
+        .then(Promise.reject)
+        .catch(response => {
+          expect(response.status).toEqual(400);
+        });
     });
 
     test('should return a 409 due to a duplicate title clash', () => {
@@ -58,5 +68,18 @@ describe('/api/schools', () => {
             .toEqual(JSON.stringify(tempSchoolMock.keywords));
         });
     });
+
+    test('should respond with a 404 status and a category if school id is not found', () => {
+      return superagent.get(`${apiURL}/invalidId`)
+        .then(Promise.reject)
+        .catch(response => {
+          expect(response.status).toEqual(404);
+        });
+    });
+  });
+
+  describe('DELETE /api/schools/:id', () => {
+    // need a 204 on success
+    // need a 404 on invalidId
   });
 });
